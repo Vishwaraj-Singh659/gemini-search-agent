@@ -1,0 +1,25 @@
+# Secrets
+.env
+
+# Saved chat history (local, may contain personal data)
+conversations.json
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
