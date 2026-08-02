@@ -83,9 +83,13 @@ source .venv/bin/activate
 # 3. Install dependencies
 pip install -r requirement.txt
 
-# 4. Add your API key — create a .env file in the project root:
-echo GOOGLE_API_KEY="your-key-here" > .env
+# 4. Add your API key — copy the template and edit it:
+cp .env.example .env        # Windows: copy .env.example .env
+# then set GOOGLE_API_KEY=... inside .env
 ```
+
+Without a key the app stops with a short message telling you exactly what to
+create — the GUI shows it in a dialog, the CLI prints it and exits 1.
 
 > ⚠️ **Never commit your `.env`.** It contains your secret API key. This repo's
 > `.gitignore` already excludes it.
@@ -187,3 +191,15 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
 ⭐ If you find this project useful, consider giving it a star!
 
 </div>
+
+---
+
+## 🧪 Tests
+
+```bash
+python -m unittest -v
+```
+
+19 tests covering the pure helpers — Gemini's block-list content shape, token
+totals across multi-step tool calls, API-key validation, and the search tool
+with the network stubbed. They need no API key and make no network calls.

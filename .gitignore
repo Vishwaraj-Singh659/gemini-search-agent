@@ -1,5 +1,6 @@
-# Secrets
+# Secrets — .env.example is the template and is tracked on purpose.
 .env
+!.env.example
 
 # Saved chat history (local, may contain personal data)
 conversations.json

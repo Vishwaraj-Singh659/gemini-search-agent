@@ -17,7 +17,7 @@ import uuid
 
 import customtkinter as ctk
 
-from agent_core import ask
+from agent_core import MissingAPIKeyError, ask, get_agent
 
 # ---------------------------------------------------------------------------
 # Persistence
@@ -308,9 +308,16 @@ class ChatApp(ctk.CTk):
         self.entry.delete("1.0", "end")
 
         convo = self._current()
-        convo["messages"].append({"role": "user", "content": text}) # type: ignore
-        if convo["title"] == "New Chat": # type: ignore
-            convo["title"] = make_title(text) # type: ignore
+        if convo is None:
+            # Should not happen — current_id is reassigned on every delete —
+            # but dereferencing None here would take the window down mid-send,
+            # losing what the user typed. Recover instead of crashing.
+            self._new_conversation()
+            convo = self._current()
+
+        convo["messages"].append({"role": "user", "content": text})
+        if convo["title"] == "New Chat":
+            convo["title"] = make_title(text)
         save_conversations(self.conversations)
         self._refresh_sidebar()
         self._add_bubble("user", text)
@@ -318,8 +325,8 @@ class ChatApp(ctk.CTk):
         self._set_busy(True, "Agent is thinking…")
         # Send only role/content to the agent (strip UI-only keys like usage).
         history = [{"role": m["role"], "content": m["content"]}
-                   for m in convo["messages"]] # type: ignore
-        threading.Thread(target=self._run_agent, args=(convo["id"], history), # type: ignore
+                   for m in convo["messages"]]
+        threading.Thread(target=self._run_agent, args=(convo["id"], history),
                          daemon=True).start()
 
     def _run_agent(self, convo_id, history):
@@ -361,5 +368,30 @@ class ChatApp(ctk.CTk):
                                 text="…" if busy else "Send")
 
 
-if __name__ == "__main__":
+def main():
+    """Start the GUI, reporting a missing API key in a dialog rather than a crash.
+
+    The agent is built up front so the failure surfaces before the window
+    appears. Previously the agent was constructed at import time, so a missing
+    key killed the process with a pydantic traceback and the user never saw a
+    window at all.
+    """
+    try:
+        get_agent()
+    except MissingAPIKeyError as e:
+        # A plain Tk dialog: CustomTkinter theming is irrelevant here, and this
+        # has to work even if nothing else does.
+        import tkinter as tk
+        from tkinter import messagebox
+
+        root = tk.Tk()
+        root.withdraw()
+        messagebox.showerror("Gemini Search Agent — setup needed", str(e))
+        root.destroy()
+        raise SystemExit(1)
+
     ChatApp().mainloop()
+
+
+if __name__ == "__main__":
+    main()
