@@ -200,6 +200,17 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for details.
 python -m unittest -v
 ```
 
-19 tests covering the pure helpers — Gemini's block-list content shape, token
-totals across multi-step tool calls, API-key validation, and the search tool
-with the network stubbed. They need no API key and make no network calls.
+30 tests, no API key and no network calls.
+
+- `test_agent_core.py` (19) — the pure helpers: Gemini's block-list content
+  shape, token totals, API-key validation, and the search tool with `ddgs`
+  stubbed.
+- `test_integration.py` (11) — the real agent graph and the real Tk widgets,
+  with only the call to Gemini replaced: a full tool-call round trip (model
+  asks to search → tool runs → model answers, with usage summed across *both*
+  model calls), the GUI's threaded send, deleting a conversation while its
+  reply is in flight, the missing-key dialog, and conversation persistence
+  against corrupt and non-ASCII files.
+
+The GUI cases skip automatically where no display is available, so the suite
+runs on headless CI.
